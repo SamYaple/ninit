@@ -41,4 +41,3 @@ unsafe impl GlobalAlloc for Allocator {
 
 #[global_allocator]
 static THISCANBENAMEDANYTHING: Allocator = Allocator;
-
