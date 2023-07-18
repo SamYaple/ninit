@@ -24,7 +24,6 @@ pub extern "C" fn _start() -> ! {
     // TODO: pre/post tweaks and error handling might go here.
     // This function only serves to GOTO main() currently.
     main();
-    sys_exit(0);
 }
 
 fn main() {
