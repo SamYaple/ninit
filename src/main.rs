@@ -6,11 +6,7 @@
 #![no_std]
 #![no_main]
 
-extern crate alloc;
-use alloc::string::ToString;
-
 use core::{
-    fmt,
     panic::PanicInfo,
     arch::asm,
     alloc::{
@@ -18,6 +14,9 @@ use core::{
         Layout,
     },
 };
+
+#[macro_use]
+mod print;
 
 // /////////////////////////////////////////////////////
 // Glue code because our target is `x86_64-unknown-none`
@@ -29,6 +28,7 @@ static G: Allocator = Allocator;
 
 #[panic_handler]
 fn panic(_: &PanicInfo) -> ! {
+    eprintln!{"Print macros are available here!"};
     sys_exit(42);
 }
 
@@ -78,45 +78,6 @@ unsafe impl GlobalAlloc for Allocator {
     //        lateout("r11") _,
     //    );
     //}
-}
-
-// //////////////////////////////
-// TODO: terrible print macros, should be refactored
-// //////////////////////////////
-macro_rules! print {
-    ($($arg:tt)*) => (print(format_args!($($arg)*)));
-}
-
-macro_rules! println {
-    ($($arg:tt)*) => (println(format_args!($($arg)*)));
-}
-
-macro_rules! eprint {
-    ($($arg:tt)*) => (eprint(format_args!($($arg)*)));
-}
-
-macro_rules! eprintln {
-    ($($arg:tt)*) => (eprintln(format_args!($($arg)*)));
-}
-
-fn print(args: fmt::Arguments) {
-    let s = args.to_string();
-    sys_write(STDOUT, &s).unwrap();
-}
-
-fn println(args: fmt::Arguments) {
-    let s = args.to_string();
-    print!{"{}\n", s};
-}
-
-fn eprint(args: fmt::Arguments) {
-    let s = args.to_string();
-    sys_write(STDERR, &s).unwrap();
-}
-
-fn eprintln(args: fmt::Arguments) {
-    let s = args.to_string();
-    eprint!{"{}\n", s};
 }
 
 // ///////////////////////
@@ -215,9 +176,9 @@ fn sys_exit(exit_code: u8) -> ! {
 
 fn main() {
     println!( "STDOUT: this works?"    );
-    print!(   "STDOUT: this works?!\n" );
+    print!(   "        this works?!\n" );
     eprintln!("STDERR: works?!?"       );
-    eprint!(  "STDERR: works?!?\n"     );
+    eprint!(  "        works?!?\n"     );
 
     sys_exit(0);
 }
