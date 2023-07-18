@@ -6,85 +6,11 @@
 #![no_std]
 #![no_main]
 
-use core::{
-    panic::PanicInfo,
-    arch::asm,
-    alloc::{
-        GlobalAlloc,
-        Layout,
-    },
-};
+use core::arch::asm;
 
-#[macro_use]
-mod print;
-
-// /////////////////////////////////////////////////////
-// Glue code because our target is `x86_64-unknown-none`
-// /////////////////////////////////////////////////////
-// We exit with different exit_codes from all of these functions. We don't
-// handle any errors, we do build and link correctly. Exit code debugging, fun!
-#[global_allocator]
-static G: Allocator = Allocator;
-
-#[panic_handler]
-fn panic(_: &PanicInfo) -> ! {
-    eprintln!{"Print macros are available here!"};
-    sys_exit(42);
-}
-
-#[lang = "eh_personality"]
-pub extern "C" fn eh_personality() {
-    sys_exit(43);
-}
-
-#[no_mangle]
-pub extern "C" fn _Unwind_Resume() -> ! {
-    sys_exit(44);
-}
-
-#[alloc_error_handler]
-fn alloc_error(_: core::alloc::Layout) -> ! {
-    sys_exit(45);
-}
-
-// //////////////////////////////////////
-// Memory Allocator using mmap and munmap
-// //////////////////////////////////////
-pub struct Allocator;
-
-unsafe impl GlobalAlloc for Allocator {
-    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        let ret = match sys_mmap(layout.size()) {
-            Ok(addr) => addr,
-            Err(_)   => sys_exit(43),
-        };
-        ret
-    }
-
-    // We do need to _define_ a dealloc function, but we don't actually need to
-    // deallocate anything. The OS we run this against will cleanup for us when
-    // we exit.
-    // Yay memory leaks!
-    unsafe fn dealloc(&self, _: *mut u8, _: Layout) { }
-    //unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-    //    let len = layout.size();
-    //    asm!(
-    //        "syscall",
-    //        in("rax") SYS_MUNMAP,
-    //        in("rdi") ptr,
-    //        in("rsi") len,
-
-    //        lateout("rcx") _,
-    //        lateout("r11") _,
-    //    );
-    //}
-}
-
-// ///////////////////////
-// BEGIN CODE I CARE ABOUT
-//   anything above this comment block is machinery
-//   that was required for the code below to be useful
-// ///////////////////////
+mod allocator;
+mod internals;
+#[macro_use] mod print;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
