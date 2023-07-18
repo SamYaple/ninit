@@ -1,12 +1,13 @@
 {
     "arch": "x86_64",
-    "data-layout": "e-m:e-i64:64-f80:128-n8:16:32:64-S128",
-    "features": "-mmx,-sse,+soft-float",
+    "target-pointer-width": "64",
+    "data-layout": "e-m:e-i64:64-n8:16:32:64-S128",
+    "llvm-target": "x86_64-unknown-none",
+
+    "features": "",
     "linker": "rust-lld",
     "linker-flavor": "ld.lld",
-    "llvm-target": "x86_64-unknown-none",
-    "os": "none",
+
     "target-c-int-width": "32",
-    "target-endian":        "little",
-    "target-pointer-width": "64"
+    "target-endian": "little"
 }
